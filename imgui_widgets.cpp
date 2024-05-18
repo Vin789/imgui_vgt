@@ -810,6 +810,81 @@ bool ImGui::ArrowButton(const char* str_id, ImGuiDir dir)
     return ArrowButtonEx(str_id, dir, ImVec2(sz, sz), ImGuiButtonFlags_None);
 }
 
+
+// VGT BEGIN
+bool ImGui::MinimizeMaximizeRestoreCommonClipCode(ImGuiID id, const ImVec2& pos, ImRect& bb, bool& hovered, bool& held, bool& pressed)
+{
+    ImGuiContext& g = *GImGui;
+    ImGuiWindow* window = g.CurrentWindow;
+
+    // Tweak 1: Shrink hit-testing area if button covers an abnormally large proportion of the visible region. That's in order to facilitate moving the window away. (#3825)
+    // This may better be applied as a general hit-rect reduction mechanism for all widgets to ensure the area to move window is always accessible?
+    bb = ImRect(pos, pos + ImVec2(g.FontSize, g.FontSize) + g.Style.FramePadding * 2.0f);
+    ImRect bb_interact = bb;
+    const float area_to_visible_ratio = window->OuterRectClipped.GetArea() / bb.GetArea();
+    if (area_to_visible_ratio < 1.5f)
+        bb_interact.Expand(ImFloor(bb_interact.GetSize() * -0.25f));
+
+    // Tweak 2: We intentionally allow interaction when clipped so that a mechanical Alt,Right,Activate sequence can always close a window.
+    // (this isn't the regular behavior of buttons, but it doesn't affect the user much because navigation tends to keep items visible).
+    bool is_clipped = !ItemAdd(bb_interact, id);
+
+    pressed = ButtonBehavior(bb_interact, id, &hovered, &held);
+    return is_clipped;
+}
+
+bool ImGui::MinimizeButton(ImGuiID id, const ImVec2& pos)
+{
+    ImGuiContext& g = *GImGui;
+    ImGuiWindow* window = g.CurrentWindow;
+    ImRect bb;
+    bool hovered, held, pressed;
+    if (MinimizeMaximizeRestoreCommonClipCode(id, pos, bb, hovered, held, pressed))
+        return pressed;
+
+    // Render
+    ImU32 col = GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
+    ImVec2 center = bb.GetCenter();
+    if (hovered)
+        window->DrawList->AddCircleFilled(center, ImMax(2.0f, g.FontSize * 0.5f + 1.0f), col, 12);
+
+    const float y_offset = bb.Min.y + (bb.Max.y - bb.Min.y) * 0.5f;
+    window->DrawList->AddLine(ImVec2(bb.Min.x + 8.0f, y_offset), ImVec2(bb.Max.x - 8.0f, y_offset), GetColorU32(ImGuiCol_Text, 1.0f));
+
+    return pressed;
+}
+
+bool ImGui::MaximizeRestoreButton(ImGuiID id, const ImVec2& pos, bool IsMaximized)
+{
+    ImGuiContext& g = *GImGui;
+    ImGuiWindow* window = g.CurrentWindow;
+    ImRect bb;
+    bool hovered, held, pressed;
+    if (MinimizeMaximizeRestoreCommonClipCode(id, pos, bb, hovered, held, pressed))
+        return pressed;
+
+    // Render
+    ImU32 col = GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered);
+    ImVec2 center = bb.GetCenter();
+    if (hovered)
+        window->DrawList->AddCircleFilled(center, ImMax(2.0f, g.FontSize * 0.5f + 1.0f), col, 12);
+
+    const ImVec2 InnerOffset = ImVec2(6.0f, 6.0f);
+    if (IsMaximized)
+    {
+        const float offset = 2.0f;
+        window->DrawList->AddRect(bb.Min + InnerOffset + ImVec2(offset, 0.0f), bb.Max - InnerOffset - ImVec2(0.0f, offset), GetColorU32(ImGuiCol_Text));
+        window->DrawList->AddRect(bb.Min + InnerOffset + ImVec2(0.0f, offset), bb.Max - InnerOffset - ImVec2(offset, 0.0f), GetColorU32(ImGuiCol_Text));
+    }
+    else
+    {
+        window->DrawList->AddRect(bb.Min + InnerOffset, bb.Max - InnerOffset, GetColorU32(ImGuiCol_Text));
+    }
+
+    return pressed;
+}
+// VGT END 
+
 // Button to close a window
 bool ImGui::CloseButton(ImGuiID id, const ImVec2& pos)
 {
@@ -6226,6 +6301,12 @@ bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* l
     frame_bb.Min.y = window->DC.CursorPos.y;
     frame_bb.Max.x = span_all_columns ? window->ParentWorkRect.Max.x : (flags & ImGuiTreeNodeFlags_SpanTextWidth) ? window->DC.CursorPos.x + text_width + padding.x : window->WorkRect.Max.x;
     frame_bb.Max.y = window->DC.CursorPos.y + frame_height;
+
+// VGT BEGIN
+    if (flags & ImGuiTreeNodeFlags_VGT_SpanWidthColumns)
+        frame_bb.Max.x = window->ParentWorkRect.Max.x;
+// VGT END
+
     if (display_frame)
     {
         // Framed header expand a little outside the default padding, to the edge of InnerClipRect

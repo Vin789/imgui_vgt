@@ -153,6 +153,9 @@ static ImGui_ImplSDL2_Data* ImGui_ImplSDL2_GetBackendData()
 
 // Forward Declarations
 static void ImGui_ImplSDL2_UpdateMonitors();
+// VGT BEGIN
+static void ImGui_ImplSDL2_UpdateMinimizeWindows();
+// VGT END
 static void ImGui_ImplSDL2_InitPlatformInterface(SDL_Window* window, void* sdl_gl_context);
 static void ImGui_ImplSDL2_ShutdownPlatformInterface();
 
@@ -892,6 +895,10 @@ void ImGui_ImplSDL2_NewFrame()
 
     // Update game controllers (if enabled and available)
     ImGui_ImplSDL2_UpdateGamepads();
+
+// VGT BEGIN
+    ImGui_ImplSDL2_UpdateMinimizeWindows();
+// VGT END
 }
 
 //--------------------------------------------------------------------------------------------------------
@@ -1140,6 +1147,46 @@ static void ImGui_ImplSDL2_ShutdownPlatformInterface()
 {
     ImGui::DestroyPlatformWindows();
 }
+
+
+// VGT BEGIN
+static void ImGui_ImplSDL2_UpdateMinimizeWindows()
+{
+    ImGuiContext& context = *GImGui;
+    for (ImGuiViewportP* viewport : context.Viewports)
+    {
+        if (!viewport->PlatformUserData || !viewport->Window)
+            continue;
+
+        ImGui_ImplSDL2_ViewportData* vd = static_cast<ImGui_ImplSDL2_ViewportData*>(viewport->PlatformUserData);
+        if (!vd || !vd->Window)
+            continue;
+
+        if (viewport->Window->WantMinimize)
+        {
+            viewport->Window->WantMinimize = false;
+            SDL_MinimizeWindow(vd->Window);
+        }
+    }
+}
+
+void ImGui_ImplSDL2_GetAllWindows(ImVector<SDL_Window*>& OutWindows)
+{
+    ImVector<ImGuiViewport*>& Viewports = ImGui::GetPlatformIO().Viewports;
+
+    for (ImGuiViewport* Viewport : Viewports)
+    {
+        if (!Viewport || !Viewport->PlatformUserData)
+            continue;
+
+        ImGui_ImplSDL2_ViewportData* Data = static_cast<ImGui_ImplSDL2_ViewportData*>(Viewport->PlatformUserData);
+        if (!Data || !Data->Window)
+            continue;
+
+        OutWindows.push_back(Data->Window);
+    }
+}
+// VGT END
 
 //-----------------------------------------------------------------------------
 

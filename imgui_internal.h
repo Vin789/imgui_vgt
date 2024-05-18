@@ -2775,6 +2775,13 @@ struct IMGUI_API ImGuiWindow
     bool                    WriteAccessed;                      // Set to true when any widget access the current window
     bool                    Collapsed;                          // Set when collapsing window to become only title-bar
     bool                    WantCollapseToggle;
+// VGT BEGIN
+    bool                    WantMinimize;
+    bool                    WantMaximize;
+    bool                    WantRestore;
+    ImVec2                  PosBeforeMaximize;
+    ImVec2                  SizeBeforeMaximize;
+// VGT END
     bool                    SkipItems;                          // Set when items can safely be all clipped (e.g. window not visible or collapsed)
     bool                    SkipRefresh;                        // [EXPERIMENTAL] Reuse previous frame drawn contents, Begin() returns false.
     bool                    Appearing;                          // Set during the frame where the window is appearing (or re-appearing)
@@ -3741,6 +3748,11 @@ namespace ImGui
     // Widgets
     IMGUI_API void          TextEx(const char* text, const char* text_end = NULL, ImGuiTextFlags flags = 0);
     IMGUI_API bool          ButtonEx(const char* label, const ImVec2& size_arg = ImVec2(0, 0), ImGuiButtonFlags flags = 0);
+// VGT BEGIN
+    IMGUI_API bool          MinimizeMaximizeRestoreCommonClipCode(ImGuiID id, const ImVec2& pos, ImRect& bb, bool& hovered, bool& held, bool& pressed);
+    IMGUI_API bool          MinimizeButton(ImGuiID id, const ImVec2& pos);
+    IMGUI_API bool          MaximizeRestoreButton(ImGuiID id, const ImVec2& pos, bool IsMaximized);
+// VGT END
     IMGUI_API bool          ArrowButtonEx(const char* str_id, ImGuiDir dir, ImVec2 size_arg, ImGuiButtonFlags flags = 0);
     IMGUI_API bool          ImageButtonEx(ImGuiID id, ImTextureID texture_id, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col, ImGuiButtonFlags flags = 0);
     IMGUI_API void          SeparatorEx(ImGuiSeparatorFlags flags, float thickness = 1.0f);

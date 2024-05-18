@@ -1074,6 +1074,10 @@ enum ImGuiWindowFlags_
     ImGuiWindowFlags_ChildMenu              = 1 << 28,  // Don't use! For internal use by BeginMenu()
     ImGuiWindowFlags_DockNodeHost           = 1 << 29,  // Don't use! For internal use by Begin()/NewFrame()
 
+// VGT BEGIN
+    ImGuiWindowFlags_VGT_CustomButtons      = 1 << 29,  // Custom Minimize, Maximize/Restore buttons
+// VGT END
+
     // Obsolete names
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     ImGuiWindowFlags_AlwaysUseWindowPadding = 1 << 30,  // Obsoleted in 1.90: Use ImGuiChildFlags_AlwaysUseWindowPadding in BeginChild() call.
@@ -1155,6 +1159,9 @@ enum ImGuiTreeNodeFlags_
     ImGuiTreeNodeFlags_NavLeftJumpsBackHere = 1 << 15,  // (WIP) Nav: left direction may move to this TreeNode() from any of its child (items submitted between TreeNode and TreePop)
     //ImGuiTreeNodeFlags_NoScrollOnOpen     = 1 << 16,  // FIXME: TODO: Disable automatic scroll on TreePop() if node got just open and contents is not visible
     ImGuiTreeNodeFlags_CollapsingHeader     = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_NoAutoOpenOnLog,
+// VGT BEGIN
+    ImGuiTreeNodeFlags_VGT_SpanWidthColumns = 1 << 17,  // Span tree node on full table column
+// VGT END
 
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     ImGuiTreeNodeFlags_AllowItemOverlap     = ImGuiTreeNodeFlags_AllowOverlap,  // Renamed in 1.89.7

@@ -4625,6 +4625,40 @@ void ImGui::UpdateMouseMovingWindowEndFrame()
         }
     }
 
+// VGT BEGIN
+    if (g.IO.MouseDoubleClicked[0])
+    {
+        ImGuiWindow* root_window = g.HoveredWindow ? g.HoveredWindow->RootWindow : NULL;
+        const bool is_closed_popup = root_window && (root_window->Flags & ImGuiWindowFlags_Popup) && !IsPopupOpen(root_window->PopupId, ImGuiPopupFlags_AnyPopupLevel);
+
+        if (root_window != NULL && !is_closed_popup)
+        {
+            // Cancel moving if clicked outside of title bar
+            bool outside = false;
+            if (g.IO.ConfigWindowsMoveFromTitleBarOnly)
+                if (!(root_window->Flags & ImGuiWindowFlags_NoTitleBar) || root_window->DockIsActive)
+                    if (!root_window->TitleBarRect().Contains(g.IO.MouseClickedPos[0]))
+                        outside = true;
+
+            if (!outside)
+            {
+                ImGuiPlatformMonitor monitor = ImGui::GetPlatformIO().Monitors[root_window->Viewport->PlatformMonitor];
+                // Hack Depending on the graphics driver the OS may force a fullscreen and screw ImGui rendering
+                // See https://github.com/ocornut/imgui/issues/6179
+                monitor.WorkSize.y += 1.0f;
+                const bool IsMaximized = root_window->Pos.x == monitor.WorkPos.x && root_window->Pos.y == monitor.WorkPos.y
+                    && root_window->Size.x == monitor.WorkSize.x && root_window->Size.y == monitor.WorkSize.y;
+
+                g.MovingWindow = NULL;
+                if (IsMaximized)
+                    root_window->WantRestore = true;
+                else
+                    root_window->WantMaximize = true;
+            }
+        }
+    }
+// VGT END
+
     // With right mouse button we close popups without changing focus based on where the mouse is aimed
     // Instead, focus will be restored to the window under the bottom-most closed popup.
     // (The left mouse button path calls FocusWindow on the hovered window, which will lead NewFrame->ClosePopupsOverWindow to trigger)
@@ -6621,6 +6655,45 @@ void ImGui::RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar
     }
 }
 
+
+// VGT BEGIN
+void DrawVGTCustomButtons(ImGuiWindow* window, const ImRect& title_bar_rect, float& pad_r)
+{
+    ImGuiContext& g = *GImGui;
+    ImGuiStyle& style = g.Style;
+    ImVec2 maximize_restore_button_pos;
+    ImVec2 minimize_button_pos;
+    const float button_sz = g.FontSize;
+
+    pad_r += button_sz;
+    maximize_restore_button_pos = ImVec2(title_bar_rect.Max.x - pad_r - style.FramePadding.x, title_bar_rect.Min.y);
+    pad_r += button_sz;
+    minimize_button_pos = ImVec2(title_bar_rect.Max.x - pad_r - style.FramePadding.x, title_bar_rect.Min.y);
+
+    ImGuiPlatformMonitor monitor = ImGui::GetPlatformIO().Monitors[window->Viewport->PlatformMonitor];
+    // Hack Depending on the graphics driver the OS may force a fullscreen and screw ImGui rendering
+    // See https://github.com/ocornut/imgui/issues/6179
+    monitor.WorkSize.y += 1.0f;
+    const bool IsMaximized = window->Pos.x == monitor.WorkPos.x && window->Pos.y == monitor.WorkPos.y
+        && window->Size.x == monitor.WorkSize.x && window->Size.y == monitor.WorkSize.y;
+
+    if (ImGui::MaximizeRestoreButton(window->GetID("#MAXIMIZE_RESTORE"), maximize_restore_button_pos, IsMaximized))
+    {
+        if (IsMaximized)
+        {
+            window->WantRestore = true;
+        }
+        else
+        {
+            window->WantMaximize = true;
+        }
+    }
+
+    if (ImGui::MinimizeButton(window->GetID("#MINIMIZE"), minimize_button_pos))
+        window->WantMinimize = true;
+}
+// VGT END
+
 // When inside a dock node, this is handled in DockNodeCalcTabBarLayout() instead.
 // Render title text, collapse button, close button
 void ImGui::RenderWindowTitleBarContents(ImGuiWindow* window, const ImRect& title_bar_rect, const char* name, bool* p_open)
@@ -6670,6 +6743,13 @@ void ImGui::RenderWindowTitleBarContents(ImGuiWindow* window, const ImRect& titl
     if (has_close_button)
         if (CloseButton(window->GetID("#CLOSE"), close_button_pos))
             *p_open = false;
+
+// VGT BEGIN
+    if (flags & ImGuiWindowFlags_VGT_CustomButtons)
+    {
+        DrawVGTCustomButtons(window, title_bar_rect, pad_r);
+    }
+// VGT END
 
     window->DC.NavLayerCurrent = ImGuiNavLayer_Main;
     g.CurrentItemFlags = item_flags_backup;
@@ -6812,6 +6892,45 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
     const bool window_just_created = (window == NULL);
     if (window_just_created)
         window = CreateNewWindow(name, flags);
+// VGT BEGIN
+    else if (window->Viewport)
+    {
+        if (window->WantMaximize)
+        {
+            window->PosBeforeMaximize = window->Pos;
+            window->SizeBeforeMaximize = window->Size;
+
+            ImGuiPlatformMonitor monitor = ImGui::GetPlatformIO().Monitors[window->Viewport->PlatformMonitor];
+
+            // Hack Depending on the graphics driver the OS may force a fullscreen and screw ImGui rendering
+            // See https://github.com/ocornut/imgui/issues/6179
+            monitor.WorkSize.y += 1.0f;
+            ImGui::SetNextWindowPos(monitor.WorkPos);
+            ImGui::SetNextWindowSize(monitor.WorkSize);
+            ImGui::SetNextWindowViewport(window->Viewport->ID);
+            window->WantMaximize = false;
+        }
+        else if (window->WantRestore)
+        {
+            if (window->SizeBeforeMaximize.x == 0.0f && window->SizeBeforeMaximize.y == 0.0f) // Already Maximized at start
+            {
+                // Reduce the window from 1/3 + move it to center
+                const float reduce_percent = 0.33f;
+                const float diff_x = window->Size.x * reduce_percent;
+                const float diff_y = window->Size.y * reduce_percent;
+                window->PosBeforeMaximize = ImVec2(window->Pos.x + diff_x * 0.5f, window->Pos.y + diff_y * 0.5f);
+                window->SizeBeforeMaximize = ImVec2(window->Size.x - diff_x, window->Size.y - diff_y);
+            }
+
+            ImGui::SetNextWindowPos(window->PosBeforeMaximize);
+            ImGui::SetNextWindowSize(window->SizeBeforeMaximize);
+            ImGui::SetNextWindowViewport(window->Viewport->ID);
+            window->PosBeforeMaximize = ImVec2();
+            window->SizeBeforeMaximize = ImVec2();
+            window->WantRestore = false;
+        }
+    }
+// VGT END
 
     // [DEBUG] Debug break requested by user
     if (g.DebugBreakInWindow == window->ID)
@@ -15289,7 +15408,10 @@ static void ImGui::WindowSelectViewport(ImGuiWindow* window)
             ImVec2 mouse_ref = (flags & ImGuiWindowFlags_Tooltip) ? g.IO.MousePos : g.BeginPopupStack.back().OpenMousePos;
             bool use_mouse_ref = (g.NavDisableHighlight || !g.NavDisableMouseHover || !g.NavWindow);
             bool mouse_valid = IsMousePosValid(&mouse_ref);
-            if ((window->Appearing || (flags & (ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_ChildMenu))) && (!use_mouse_ref || mouse_valid))
+// VGT BEGIN Fix for combo popup on the wrong monitor
+            // if ((window->Appearing || (flags & (ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_ChildMenu))) && (!use_mouse_ref || mouse_valid))
+            if ((window->Appearing || window->Hidden || (flags & (ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_ChildMenu))) && (!use_mouse_ref || mouse_valid))
+// VGT END
                 window->ViewportAllowPlatformMonitorExtend = FindPlatformMonitorForPos((use_mouse_ref && mouse_valid) ? mouse_ref : NavCalcPreferredRefPos());
             else
                 window->ViewportAllowPlatformMonitorExtend = window->Viewport->PlatformMonitor;
@@ -17244,7 +17366,12 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
     // Draw whole dockspace background if ImGuiDockNodeFlags_PassthruCentralNode if set.
     // We need to draw a background at the root level if requested by ImGuiDockNodeFlags_PassthruCentralNode, but we will only know the correct pos/size
     // _after_ processing the resizing splitters. So we are using the DrawList channel splitting facility to submit drawing primitives out of order!
-    const bool render_dockspace_bg = node->IsRootNode() && host_window && (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0;
+     
+// VGT BEGIN // Remove the fact that a background is draw with ImGuiDockNodeFlags_PassthruCentralNode when we want a transparent one
+    //const bool render_dockspace_bg = node->IsRootNode() && host_window && (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0;
+    const bool render_dockspace_bg = node->IsRootNode() && host_window && (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) == 0;
+// VGT END
+
     if (render_dockspace_bg && node->IsVisible)
     {
         host_window->DrawList->ChannelsSetCurrent(DOCKING_HOST_DRAW_CHANNEL_BG);
