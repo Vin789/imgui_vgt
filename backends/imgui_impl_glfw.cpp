@@ -86,21 +86,23 @@
 #endif
 
 // GLFW
-#include <GLFW/glfw3.h>
-
-#ifdef _WIN32
-#undef APIENTRY
-#ifndef GLFW_EXPOSE_NATIVE_WIN32
-#define GLFW_EXPOSE_NATIVE_WIN32
-#endif
-#include <GLFW/glfw3native.h>   // for glfwGetWin32Window()
-#endif
-#ifdef __APPLE__
-#ifndef GLFW_EXPOSE_NATIVE_COCOA
-#define GLFW_EXPOSE_NATIVE_COCOA
-#endif
-#include <GLFW/glfw3native.h>   // for glfwGetCocoaWindow()
-#endif
+// VGT BEGIN : move to .h
+// #include <GLFW/glfw3.h>
+// 
+// #ifdef _WIN32
+// #undef APIENTRY
+// #ifndef GLFW_EXPOSE_NATIVE_WIN32
+// #define GLFW_EXPOSE_NATIVE_WIN32
+// #endif
+// #include <GLFW/glfw3native.h>   // for glfwGetWin32Window()
+// #endif
+// #ifdef __APPLE__
+// #ifndef GLFW_EXPOSE_NATIVE_COCOA
+// #define GLFW_EXPOSE_NATIVE_COCOA
+// #endif
+// #include <GLFW/glfw3native.h>   // for glfwGetCocoaWindow()
+// #endif
+// VGT_END
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -137,44 +139,46 @@
 #define GLFW_HAS_GETERROR               (GLFW_VERSION_COMBINED >= 3300) // 3.3+ glfwGetError()
 
 // GLFW data
-enum GlfwClientApi
-{
-    GlfwClientApi_Unknown,
-    GlfwClientApi_OpenGL,
-    GlfwClientApi_Vulkan,
-};
-
-struct ImGui_ImplGlfw_Data
-{
-    GLFWwindow*             Window;
-    GlfwClientApi           ClientApi;
-    double                  Time;
-    GLFWwindow*             MouseWindow;
-    GLFWcursor*             MouseCursors[ImGuiMouseCursor_COUNT];
-    ImVec2                  LastValidMousePos;
-    GLFWwindow*             KeyOwnerWindows[GLFW_KEY_LAST];
-    bool                    InstalledCallbacks;
-    bool                    CallbacksChainForAllWindows;
-    bool                    WantUpdateMonitors;
-#ifdef __EMSCRIPTEN__
-    const char*             CanvasSelector;
-#endif
-
-    // Chain GLFW callbacks: our callbacks will call the user's previously installed callbacks, if any.
-    GLFWwindowfocusfun      PrevUserCallbackWindowFocus;
-    GLFWcursorposfun        PrevUserCallbackCursorPos;
-    GLFWcursorenterfun      PrevUserCallbackCursorEnter;
-    GLFWmousebuttonfun      PrevUserCallbackMousebutton;
-    GLFWscrollfun           PrevUserCallbackScroll;
-    GLFWkeyfun              PrevUserCallbackKey;
-    GLFWcharfun             PrevUserCallbackChar;
-    GLFWmonitorfun          PrevUserCallbackMonitor;
-#ifdef _WIN32
-    WNDPROC                 PrevWndProc;
-#endif
-
-    ImGui_ImplGlfw_Data()   { memset((void*)this, 0, sizeof(*this)); }
-};
+// VGT BEGIN : move to .h
+// enum GlfwClientApi
+// {
+//     GlfwClientApi_Unknown,
+//     GlfwClientApi_OpenGL,
+//     GlfwClientApi_Vulkan,
+// };
+// 
+// struct ImGui_ImplGlfw_Data
+// {
+//     GLFWwindow*             Window;
+//     GlfwClientApi           ClientApi;
+//     double                  Time;
+//     GLFWwindow*             MouseWindow;
+//     GLFWcursor*             MouseCursors[ImGuiMouseCursor_COUNT];
+//     ImVec2                  LastValidMousePos;
+//     GLFWwindow*             KeyOwnerWindows[GLFW_KEY_LAST];
+//     bool                    InstalledCallbacks;
+//     bool                    CallbacksChainForAllWindows;
+//     bool                    WantUpdateMonitors;
+// #ifdef __EMSCRIPTEN__
+//     const char*             CanvasSelector;
+// #endif
+// 
+//     // Chain GLFW callbacks: our callbacks will call the user's previously installed callbacks, if any.
+//     GLFWwindowfocusfun      PrevUserCallbackWindowFocus;
+//     GLFWcursorposfun        PrevUserCallbackCursorPos;
+//     GLFWcursorenterfun      PrevUserCallbackCursorEnter;
+//     GLFWmousebuttonfun      PrevUserCallbackMousebutton;
+//     GLFWscrollfun           PrevUserCallbackScroll;
+//     GLFWkeyfun              PrevUserCallbackKey;
+//     GLFWcharfun             PrevUserCallbackChar;
+//     GLFWmonitorfun          PrevUserCallbackMonitor;
+// #ifdef _WIN32
+//     WNDPROC                 PrevWndProc;
+// #endif
+// 
+//     ImGui_ImplGlfw_Data()   { memset((void*)this, 0, sizeof(*this)); }
+// };
+// VGT END
 
 // Backend data stored in io.BackendPlatformUserData to allow support for multiple Dear ImGui contexts
 // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.

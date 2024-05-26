@@ -28,6 +28,63 @@
 struct GLFWwindow;
 struct GLFWmonitor;
 
+// VGT BEGIN : move from .h
+#include <GLFW/glfw3.h>
+
+#ifdef _WIN32
+#undef APIENTRY
+#ifndef GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#endif
+#include <GLFW/glfw3native.h>   // for glfwGetWin32Window()
+#endif
+#ifdef __APPLE__
+#ifndef GLFW_EXPOSE_NATIVE_COCOA
+#define GLFW_EXPOSE_NATIVE_COCOA
+#endif
+#include <GLFW/glfw3native.h>   // for glfwGetCocoaWindow()
+#endif
+
+enum GlfwClientApi
+{
+    GlfwClientApi_Unknown,
+    GlfwClientApi_OpenGL,
+    GlfwClientApi_Vulkan,
+};
+
+struct ImGui_ImplGlfw_Data
+{
+    GLFWwindow* Window;
+    GlfwClientApi           ClientApi;
+    double                  Time;
+    GLFWwindow* MouseWindow;
+    GLFWcursor* MouseCursors[ImGuiMouseCursor_COUNT];
+    ImVec2                  LastValidMousePos;
+    GLFWwindow* KeyOwnerWindows[GLFW_KEY_LAST];
+    bool                    InstalledCallbacks;
+    bool                    CallbacksChainForAllWindows;
+    bool                    WantUpdateMonitors;
+#ifdef __EMSCRIPTEN__
+    const char* CanvasSelector;
+#endif
+
+    // Chain GLFW callbacks: our callbacks will call the user's previously installed callbacks, if any.
+    GLFWwindowfocusfun      PrevUserCallbackWindowFocus;
+    GLFWcursorposfun        PrevUserCallbackCursorPos;
+    GLFWcursorenterfun      PrevUserCallbackCursorEnter;
+    GLFWmousebuttonfun      PrevUserCallbackMousebutton;
+    GLFWscrollfun           PrevUserCallbackScroll;
+    GLFWkeyfun              PrevUserCallbackKey;
+    GLFWcharfun             PrevUserCallbackChar;
+    GLFWmonitorfun          PrevUserCallbackMonitor;
+#ifdef _WIN32
+    WNDPROC                 PrevWndProc;
+#endif
+
+    ImGui_ImplGlfw_Data() { memset((void*)this, 0, sizeof(*this)); }
+};
+// VGT END
+
 IMGUI_IMPL_API bool     ImGui_ImplGlfw_InitForOpenGL(GLFWwindow* window, bool install_callbacks);
 IMGUI_IMPL_API bool     ImGui_ImplGlfw_InitForVulkan(GLFWwindow* window, bool install_callbacks);
 IMGUI_IMPL_API bool     ImGui_ImplGlfw_InitForOther(GLFWwindow* window, bool install_callbacks);
