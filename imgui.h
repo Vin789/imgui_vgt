@@ -1075,13 +1075,12 @@ enum ImGuiWindowFlags_
     ImGuiWindowFlags_DockNodeHost           = 1 << 29,  // Don't use! For internal use by Begin()/NewFrame()
 
 // VGT BEGIN
-    ImGuiWindowFlags_VGT_CustomButtons      = 1 << 29,  // Custom Minimize, Maximize/Restore buttons
-// VGT END
-
+    ImGuiWindowFlags_VGT_CustomButtons      = 1 << 30,  // Custom Minimize, Maximize/Restore buttons
     // Obsolete names
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-    ImGuiWindowFlags_AlwaysUseWindowPadding = 1 << 30,  // Obsoleted in 1.90: Use ImGuiChildFlags_AlwaysUseWindowPadding in BeginChild() call.
+   // ImGuiWindowFlags_AlwaysUseWindowPadding = 1 << 30,  // Obsoleted in 1.90: Use ImGuiChildFlags_AlwaysUseWindowPadding in BeginChild() call.
 #endif
+// VGT END
 };
 
 // Flags for ImGui::BeginChild()
