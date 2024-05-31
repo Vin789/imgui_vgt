@@ -1150,6 +1150,7 @@ static void ImGui_ImplSDL2_ShutdownPlatformInterface()
 
 
 // VGT BEGIN
+#include "imgui_internal.h"
 static void ImGui_ImplSDL2_UpdateMinimizeWindows()
 {
     ImGuiContext& context = *GImGui;
