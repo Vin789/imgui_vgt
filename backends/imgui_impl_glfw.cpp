@@ -194,6 +194,9 @@ static ImGui_ImplGlfw_Data* ImGui_ImplGlfw_GetBackendData()
 
 // Forward Declarations
 static void ImGui_ImplGlfw_UpdateMonitors();
+// VGT BEGIN
+static void ImGui_ImplGlfw_UpdateMinimizeWindows();
+// VGT END
 static void ImGui_ImplGlfw_InitPlatformInterface();
 static void ImGui_ImplGlfw_ShutdownPlatformInterface();
 
@@ -933,6 +936,10 @@ void ImGui_ImplGlfw_NewFrame()
 
     // Update game controllers (if enabled and available)
     ImGui_ImplGlfw_UpdateGamepads();
+	
+// VGT BEGIN
+    ImGui_ImplGlfw_UpdateMinimizeWindows();
+// VGT END
 }
 
 #ifdef __EMSCRIPTEN__
@@ -1363,6 +1370,29 @@ static LRESULT CALLBACK ImGui_ImplGlfw_WndProc(HWND hWnd, UINT msg, WPARAM wPara
     return ::CallWindowProcW(prev_wndproc, hWnd, msg, wParam, lParam);
 }
 #endif // #ifdef _WIN32
+
+// VGT BEGIN
+#include "imgui_internal.h"
+static void ImGui_ImplGlfw_UpdateMinimizeWindows()
+{
+    ImGuiContext& context = *GImGui;
+    for (ImGuiViewportP* viewport : context.Viewports)
+    {
+        if (!viewport->PlatformUserData || !viewport->Window)
+            continue;
+
+        ImGui_ImplGlfw_ViewportData* vd = static_cast<ImGui_ImplGlfw_ViewportData*>(viewport->PlatformUserData);
+        if (!vd || !vd->Window)
+            continue;
+
+        if (viewport->Window->WantMinimize)
+        {
+            viewport->Window->WantMinimize = false;
+            glfwIconifyWindow(vd->Window);
+        }
+    }
+}
+// VGT END
 
 //-----------------------------------------------------------------------------
 

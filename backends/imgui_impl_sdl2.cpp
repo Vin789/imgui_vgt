@@ -1148,7 +1148,6 @@ static void ImGui_ImplSDL2_ShutdownPlatformInterface()
     ImGui::DestroyPlatformWindows();
 }
 
-
 // VGT BEGIN
 #include "imgui_internal.h"
 static void ImGui_ImplSDL2_UpdateMinimizeWindows()
@@ -1168,23 +1167,6 @@ static void ImGui_ImplSDL2_UpdateMinimizeWindows()
             viewport->Window->WantMinimize = false;
             SDL_MinimizeWindow(vd->Window);
         }
-    }
-}
-
-void ImGui_ImplSDL2_GetAllWindows(ImVector<SDL_Window*>& OutWindows)
-{
-    ImVector<ImGuiViewport*>& Viewports = ImGui::GetPlatformIO().Viewports;
-
-    for (ImGuiViewport* Viewport : Viewports)
-    {
-        if (!Viewport || !Viewport->PlatformUserData)
-            continue;
-
-        ImGui_ImplSDL2_ViewportData* Data = static_cast<ImGui_ImplSDL2_ViewportData*>(Viewport->PlatformUserData);
-        if (!Data || !Data->Window)
-            continue;
-
-        OutWindows.push_back(Data->Window);
     }
 }
 // VGT END
