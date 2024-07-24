@@ -4602,9 +4602,9 @@ void ImGui::UpdateMouseMovingWindowEndFrame()
         // Handle the edge case of a popup being closed while clicking in its empty space.
         // If we try to focus it, FocusWindow() > ClosePopupsOverWindow() will accidentally close any parent popups because they are not linked together any more.
         ImGuiWindow* root_window = g.HoveredWindow ? g.HoveredWindow->RootWindow : NULL;
-        const bool is_closed_popup = root_window && (root_window->Flags & ImGuiWindowFlags_Popup) && !IsPopupOpen(root_window->PopupId, ImGuiPopupFlags_AnyPopupLevel);
+        const bool is_popup = root_window && (root_window->Flags & ImGuiWindowFlags_Popup);
 
-        if (root_window != NULL && !is_closed_popup)
+        if (root_window != NULL && !is_popup)
         {
             StartMouseMovingWindow(g.HoveredWindow); //-V595
 
