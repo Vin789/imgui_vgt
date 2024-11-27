@@ -6379,8 +6379,11 @@ bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* l
     ImGuiButtonFlags button_flags = ImGuiTreeNodeFlags_None;
     if ((flags & ImGuiTreeNodeFlags_AllowOverlap) || (g.LastItemData.InFlags & ImGuiItemFlags_AllowOverlap))
         button_flags |= ImGuiButtonFlags_AllowOverlap;
-    if (!is_leaf)
-        button_flags |= ImGuiButtonFlags_PressedOnDragDropHold;
+	
+// VGT BEGIN Always draw hovered even with leaf // https://github.com/ocornut/imgui/issues/6940
+    //if (!is_leaf)
+    button_flags |= ImGuiButtonFlags_PressedOnDragDropHold;
+// VGT END
 
     // We allow clicking on the arrow section with keyboard modifiers held, in order to easily
     // allow browsing a tree while preserving selection with code implementing multi-selection patterns.
