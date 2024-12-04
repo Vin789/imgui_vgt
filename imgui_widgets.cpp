@@ -517,18 +517,20 @@ bool ImGui::ButtonBehavior(const ImRect& bb, ImGuiID id, bool* out_hovered, bool
     bool hovered = ItemHoverable(bb, id, item_flags);
 
     // Special mode for Drag and Drop where holding button pressed for a long time while dragging another item triggers the button
-    if (g.DragDropActive && (flags & ImGuiButtonFlags_PressedOnDragDropHold) && !(g.DragDropSourceFlags & ImGuiDragDropFlags_SourceNoHoldToOpenOthers))
+// VGT BEGIN Continue to show hovered when drag and droping
+    if (g.DragDropActive && !(g.DragDropSourceFlags & ImGuiDragDropFlags_SourceNoHoldToOpenOthers))
         if (IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
         {
             hovered = true;
             SetHoveredID(id);
-            if (g.HoveredIdTimer - g.IO.DeltaTime <= DRAGDROP_HOLD_TO_OPEN_TIMER && g.HoveredIdTimer >= DRAGDROP_HOLD_TO_OPEN_TIMER)
+            if ((flags & ImGuiButtonFlags_PressedOnDragDropHold) && g.HoveredIdTimer - g.IO.DeltaTime <= DRAGDROP_HOLD_TO_OPEN_TIMER && g.HoveredIdTimer >= DRAGDROP_HOLD_TO_OPEN_TIMER)
             {
                 pressed = true;
                 g.DragDropHoldJustPressedId = id;
                 FocusWindow(window);
             }
         }
+// VGT END
 
     if (flatten_hovered_children)
         g.HoveredWindow = backup_hovered_window;
