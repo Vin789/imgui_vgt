@@ -90,7 +90,7 @@
 
 //---- Define constructor and implicit cast operators to convert back<>forth between your math types and ImVec2/ImVec4.
 // This will be inlined as part of ImVec2 and ImVec4 class declarations.
-/*
+
 #if VGT_EDITOR
 #define IM_VEC2_CLASS_EXTRA                                                 \
         constexpr ImVec2(const VGT::Vec2f& Vec) : x(Vec.m_X), y(Vec.m_Y) {} \
@@ -100,7 +100,7 @@
         constexpr ImVec4(const VGT::Color& Col) : x(Col.R), y(Col.G), z(Col.B), w(Col.A) {} \
         operator VGT::Color() const { return VGT::Color(x, y, z, w); }
 #endif // VGT_EDITOR
-*/
+
 //---- ...Or use Dear ImGui's own very basic math operators.
 //#define IMGUI_DEFINE_MATH_OPERATORS
 
