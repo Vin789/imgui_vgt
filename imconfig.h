@@ -92,6 +92,9 @@
 // This will be inlined as part of ImVec2 and ImVec4 class declarations.
 
 #if VGT_EDITOR
+#include "Core/Color.h"
+#include "Core/Vector2D.h"
+
 #define IM_VEC2_CLASS_EXTRA                                                 \
         constexpr ImVec2(const VGT::Vec2f& Vec) : x(Vec.m_X), y(Vec.m_Y) {} \
         operator VGT::Vec2f() const { return VGT::Vec2f(x, y); }
