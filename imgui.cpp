@@ -6677,7 +6677,7 @@ void DrawVGTCustomButtons(ImGuiWindow* window, const ImRect& title_bar_rect, flo
     const bool IsMaximized = window->Pos.x == monitor.WorkPos.x && window->Pos.y == monitor.WorkPos.y
         && window->Size.x == monitor.WorkSize.x && window->Size.y == monitor.WorkSize.y;
 
-    if (ImGui::MaximizeRestoreButton(window->GetID("#MAXIMIZE_RESTORE"), maximize_restore_button_pos, IsMaximized))
+    if (ImGui::MaximizeRestoreButton(window, maximize_restore_button_pos, IsMaximized))
     {
         if (IsMaximized)
         {
@@ -6689,7 +6689,7 @@ void DrawVGTCustomButtons(ImGuiWindow* window, const ImRect& title_bar_rect, flo
         }
     }
 
-    if (ImGui::MinimizeButton(window->GetID("#MINIMIZE"), minimize_button_pos))
+    if (ImGui::MinimizeButton(window, minimize_button_pos))
         window->WantMinimize = true;
 }
 // VGT END
@@ -6747,6 +6747,7 @@ void ImGui::RenderWindowTitleBarContents(ImGuiWindow* window, const ImRect& titl
 // VGT BEGIN
     if (flags & ImGuiWindowFlags_VGT_CustomButtons)
     {
+		pad_r -= style.ItemInnerSpacing.x;
         DrawVGTCustomButtons(window, title_bar_rect, pad_r);
     }
 // VGT END
@@ -17754,6 +17755,28 @@ static void ImGui::DockNodeUpdateTabBar(ImGuiDockNode* node, ImGuiWindow* host_w
             PopItemFlag();
         }
     }
+	
+// VGT BEGIN Handle draw custom button for docked windows
+	if (node && (!node->ParentNode ||  node->ParentNode->ChildNodes[0] == node))
+    {
+        bool ShouldDrawVGTCustomButtons = false;
+
+        for (ImGuiWindow* windowPtr : node->Windows)
+        {
+            if (windowPtr && (windowPtr->Flags & ImGuiWindowFlags_VGT_CustomButtons))
+            {
+                ShouldDrawVGTCustomButtons = true;
+                break;
+            }
+        }
+
+        if (ShouldDrawVGTCustomButtons)
+        {
+            float pad_r = title_bar_rect.Max.x - close_button_pos.x;
+            DrawVGTCustomButtons(node->HostWindow, title_bar_rect, pad_r);
+        }
+    }
+// VGT END
 
     // When clicking on the title bar outside of tabs, we still focus the selected tab for that node
     // FIXME: TabItems submitted earlier use AllowItemOverlap so we manually perform a more specific test for now (hovered || held) in order to not cover them.

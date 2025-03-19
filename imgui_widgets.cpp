@@ -835,13 +835,12 @@ bool ImGui::MinimizeMaximizeRestoreCommonClipCode(ImGuiID id, const ImVec2& pos,
     return is_clipped;
 }
 
-bool ImGui::MinimizeButton(ImGuiID id, const ImVec2& pos)
+bool ImGui::MinimizeButton(ImGuiWindow* window, const ImVec2& pos)
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
     ImRect bb;
     bool hovered, held, pressed;
-    if (MinimizeMaximizeRestoreCommonClipCode(id, pos, bb, hovered, held, pressed))
+    if (MinimizeMaximizeRestoreCommonClipCode(window->GetID("#MINIMIZE"), pos, bb, hovered, held, pressed))
         return pressed;
 
     // Render
@@ -856,13 +855,12 @@ bool ImGui::MinimizeButton(ImGuiID id, const ImVec2& pos)
     return pressed;
 }
 
-bool ImGui::MaximizeRestoreButton(ImGuiID id, const ImVec2& pos, bool IsMaximized)
+bool ImGui::MaximizeRestoreButton(ImGuiWindow* window, const ImVec2& pos, bool isMaximized)
 {
     ImGuiContext& g = *GImGui;
-    ImGuiWindow* window = g.CurrentWindow;
     ImRect bb;
     bool hovered, held, pressed;
-    if (MinimizeMaximizeRestoreCommonClipCode(id, pos, bb, hovered, held, pressed))
+    if (MinimizeMaximizeRestoreCommonClipCode(window->GetID("#MAXIMIZE_RESTORE"), pos, bb, hovered, held, pressed))
         return pressed;
 
     // Render
@@ -872,7 +870,7 @@ bool ImGui::MaximizeRestoreButton(ImGuiID id, const ImVec2& pos, bool IsMaximize
         window->DrawList->AddCircleFilled(center, ImMax(2.0f, g.FontSize * 0.5f + 1.0f), col, 12);
 
     const ImVec2 InnerOffset = ImVec2(6.0f, 6.0f);
-    if (IsMaximized)
+    if (isMaximized)
     {
         const float offset = 2.0f;
         window->DrawList->AddRect(bb.Min + InnerOffset + ImVec2(offset, 0.0f), bb.Max - InnerOffset - ImVec2(0.0f, offset), GetColorU32(ImGuiCol_Text));

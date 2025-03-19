@@ -3750,8 +3750,8 @@ namespace ImGui
     IMGUI_API bool          ButtonEx(const char* label, const ImVec2& size_arg = ImVec2(0, 0), ImGuiButtonFlags flags = 0);
 // VGT BEGIN
     IMGUI_API bool          MinimizeMaximizeRestoreCommonClipCode(ImGuiID id, const ImVec2& pos, ImRect& bb, bool& hovered, bool& held, bool& pressed);
-    IMGUI_API bool          MinimizeButton(ImGuiID id, const ImVec2& pos);
-    IMGUI_API bool          MaximizeRestoreButton(ImGuiID id, const ImVec2& pos, bool IsMaximized);
+    IMGUI_API bool          MinimizeButton(ImGuiWindow* window, const ImVec2& pos);
+    IMGUI_API bool          MaximizeRestoreButton(ImGuiWindow* window, const ImVec2& pos, bool isMaximized);
 // VGT END
     IMGUI_API bool          ArrowButtonEx(const char* str_id, ImGuiDir dir, ImVec2 size_arg, ImGuiButtonFlags flags = 0);
     IMGUI_API bool          ImageButtonEx(ImGuiID id, ImTextureID texture_id, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& bg_col, const ImVec4& tint_col, ImGuiButtonFlags flags = 0);
