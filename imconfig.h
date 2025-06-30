@@ -93,10 +93,10 @@
 
 #if VGT_EDITOR
 #include "Core/Color.h"
-#include "Core/Vector2D.h"
+#include "Core/Geometry/Vector2D.h"
 
-#define IM_VEC2_CLASS_EXTRA                                                 \
-        constexpr ImVec2(const VGT::Vec2f& Vec) : x(Vec.X), y(Vec.Y) {} \
+#define IM_VEC2_CLASS_EXTRA                                                 				\
+        constexpr ImVec2(const VGT::Vec2f& Vec) : x(Vec.X), y(Vec.Y) {} 					\
         operator VGT::Vec2f() const { return VGT::Vec2f(x, y); }
 
 #define IM_VEC4_CLASS_EXTRA                                                                 \
