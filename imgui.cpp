@@ -4626,12 +4626,13 @@ void ImGui::UpdateMouseMovingWindowEndFrame()
     }
 
 // VGT BEGIN
-    if (g.IO.MouseDoubleClicked[0])
+    ImGuiWindow* root_window = g.HoveredWindow ? g.HoveredWindow->RootWindow : NULL;
+    if (g.IO.MouseDoubleClicked[0] && root_window)
     {
-        ImGuiWindow* root_window = g.HoveredWindow ? g.HoveredWindow->RootWindow : NULL;
-        const bool is_popup = root_window && (root_window->Flags & ImGuiWindowFlags_Popup);
+        const bool is_popup = (root_window->Flags & ImGuiWindowFlags_Popup);
+        const bool is_using_custom_buttons = (root_window->Flags & ImGuiWindowFlags_VGT_CustomButtons);
 
-        if (root_window != NULL && !is_popup)
+        if (!is_popup && is_using_custom_buttons)
         {
             // Cancel moving if clicked outside of title bar
             bool outside = false;
