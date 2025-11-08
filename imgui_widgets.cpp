@@ -6302,11 +6302,6 @@ bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* l
     frame_bb.Max.x = span_all_columns ? window->ParentWorkRect.Max.x : (flags & ImGuiTreeNodeFlags_SpanTextWidth) ? window->DC.CursorPos.x + text_width + padding.x : window->WorkRect.Max.x;
     frame_bb.Max.y = window->DC.CursorPos.y + frame_height;
 
-// VGT BEGIN
-    if (flags & ImGuiTreeNodeFlags_VGT_SpanWidthColumns)
-        frame_bb.Max.x = window->ParentWorkRect.Max.x;
-// VGT END
-
     if (display_frame)
     {
         // Framed header expand a little outside the default padding, to the edge of InnerClipRect
